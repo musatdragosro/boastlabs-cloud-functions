@@ -1,8 +1,3 @@
-API_VERSION = "1.0.0"
-
-TIMEOUT_SECONDS = 360
-
-
 class Status:
     NEW = 'new'
     RUNNING = 'running'

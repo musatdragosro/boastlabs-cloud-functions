@@ -1,31 +1,31 @@
 import traceback
-
-from google.cloud import firestore_v1
-
 import threading
 from typing import List
 from datetime import datetime
 
+from google.cloud import firestore_v1
 from firebase_admin import firestore
 
-from etl.execution.config import Status
-from etl.execution.progress import Progress
+from boastlabs.functions.retriable.execution.config import Status
+from boastlabs.functions.retriable.execution.progress import Progress
+from boastlabs.functions.retriable.execution.events.handling import EventWorkDone
 
 
 class State(object):
 
-    active: bool
-    status: str
-    api_version: int
     created_at: datetime
     modified_at: datetime
 
+    active: bool
+    status: str
+
     _progress: Progress
 
-    def __init__(self, db, job_path):
+    def __init__(self, service_name, db, job_ref):
+        self.service_name = service_name
         self.db = db
 
-        self.job_doc = db.document(job_path)
+        self.job_doc = job_ref
         self.etl_job_doc = self.job_doc.parent.parent
         self.fiscal_year_doc = self.etl_job_doc.parent.parent
         self.provider_doc = self.fiscal_year_doc.parent.parent
@@ -69,34 +69,28 @@ class State(object):
         self.job_doc.update({'active': active})
 
     def set_status(self, status: str, error=None):
-        # TODO: fix me
-        @firestore_v1.transactional
-        def update_status_in_transaction(transaction):
-
-            etl_job_event_ref = self.etl_job_doc.collection('events').document()
-            transaction.update(self.job_doc, {'active': False, 'status': Status.DONE})
-            transaction.update(self.etl_job_doc, {'status': Status.DONE})
-            transaction.set(etl_job_event_ref, {})
-
-        # update_status_in_transaction(transaction=firestore_v1.Transaction(client=self.db, max_attempts=10))
-
-        self.status = status
-
-        self.job_doc.update({'status': status})
-
         if status == Status.DONE:
-            update_status_in_transaction(transaction=firestore_v1.Transaction(client=self.db, max_attempts=10))
-            #
-            # self.job_doc.update({'active': False})
-            # self.etl_job_doc.collection('events').add({})
-        if status == Status.FAILED:
+            self.notify_work_done()
+
+            # Save the status last if all worked well
+            self.status = Status.DONE
+            self.active = False
+
+        elif status == Status.FAILED:
+            # Save the status first regardless if all else will fail
+            self.status = Status.FAILED
+            self.active = False
+
             error_string = repr(error)
             error_stack = traceback.format_exc()
 
             self.job_doc.update({'active': False, 'error': error_string, 'error_stack': error_stack})
             self.etl_job_doc.update({'status': status, 'error': error_string, 'error_stack': error_stack})
 
-        self.etl_job_doc.update({'status': status})
+        else:
+            self.job_doc.update({'status': status})
+            self.etl_job_doc.update({'status': status})
+            self.status = status
 
     def get_last_execution_date(self):
         """Gets last executed date from previous jobs.
@@ -135,5 +129,10 @@ class State(object):
                 p = p[item]
             return p
 
-    def get_sleep_duration(self):
-        return 0
+    def notify_work_done(self):
+        event_creator = EventWorkDone(db=self.db)
+        event_creator.create(
+            job_ref=self.job_doc,
+            parent_ref=self.etl_job_doc,
+            service_name=self.service_name,
+            service_status=Status.DONE)

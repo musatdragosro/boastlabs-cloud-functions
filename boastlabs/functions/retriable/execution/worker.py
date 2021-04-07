@@ -1,11 +1,12 @@
+from abc import abstractmethod
 import random
 import time
 
-from etl.execution.exceptions import RetryException, SleepException
-from etl.execution.threading import TimedThread
-from etl.execution.state import State
-from etl.execution.time import Timer
-from etl.execution.config import Status
+from boastlabs.functions.retriable.execution.exceptions import RetryException, SleepException
+from boastlabs.functions.retriable.execution.threading import TimedThread
+from boastlabs.functions.retriable.execution.state import State
+from boastlabs.functions.retriable.execution.time import Timer
+from boastlabs.functions.retriable.execution.config import Status
 
 
 class Worker(TimedThread):
@@ -16,7 +17,11 @@ class Worker(TimedThread):
         self.state = state
 
     def get_sleep_duration(self):
-        return self.state.get_sleep_duration()
+        raise 0
+
+    @abstractmethod
+    def work(self):
+        raise NotImplementedError
 
     def run(self):
         self.state.set_created_at()
@@ -51,11 +56,8 @@ class Worker(TimedThread):
                 self.state.set_status(Status.FAILED, error=e)
                 raise e
 
-    def work(self):
-        raise NotImplementedError
 
-
-class NoopWorker(Worker):
+class TestWorker(Worker):
 
     def work(self):
         sleep = random.randint(0, 15)

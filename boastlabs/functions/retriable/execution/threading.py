@@ -3,7 +3,7 @@ import logging
 from threading import Thread
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from etl.execution.time import Timer
+from boastlabs.functions.retriable.execution.time import Timer
 
 
 class TimedThread(Thread):
