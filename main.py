@@ -16,5 +16,5 @@ if __name__ == '__main__':
     Function(
         service_name='ingest',
         db=db,
-        event_path='debug/test-tenant-0/integrations/Github/fiscal_years/31-Dec-21 FYE/etl_jobs/WQOcyXtoQDc5hM54wc7p/jbos/ingest/events/JGbcljGE31fKIoUuI1HG'
+        event_path='tenants/test/integrations/Github/fiscal_years/31-Dec-21 FYE/etl_jobs/64AIT1AiFZIYkX697kXa/jobs/ingest/events/MRnASWI4v4z4k1USXg2Q'
     ).run(timeout_seconds=360)

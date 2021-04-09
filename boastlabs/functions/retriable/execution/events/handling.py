@@ -5,7 +5,11 @@ from google.cloud import firestore_v1
 from google.cloud.firestore_v1 import DocumentReference
 
 from boastlabs import __version__
-from boastlabs.functions.retriable.execution.exceptions import HandlerNotFoundException, IncompatibleApiVersionException
+from boastlabs.functions.retriable.execution.exceptions import (
+    ExecutionNotAllowedException,
+    HandlerNotFoundException,
+    IncompatibleApiVersionException,
+    RetryException)
 from boastlabs.functions.retriable.execution.events.handler import Event, TriggerEventHandler
 from boastlabs.functions.retriable.execution.config import Status
 
@@ -45,12 +49,21 @@ class EventHandling(object):
                     event.set_handled(True)
                 else:
                     raise HandlerNotFoundException(event_type=event.event_type,
-                                                   known_events=[e for e in self.handlers])
+                                                   known_events=[ev for ev in self.handlers])
             else:
                 raise IncompatibleApiVersionException(found_api_version=event.set_api_version(),
                                                       current_api_version=__version__)
 
-        handle_in_transaction(transaction=firestore_v1.Transaction(client=self.db))
+        try:
+            handle_in_transaction(transaction=firestore_v1.Transaction(client=self.db))
+        except ExecutionNotAllowedException as e:
+            raise e
+        except HandlerNotFoundException as e:
+            raise e
+        except IncompatibleApiVersionException as e:
+            raise e
+        except Exception:
+            raise RetryException
 
 
 class EventWorkDone(object):
@@ -77,13 +90,14 @@ class EventWorkDone(object):
 
         @firestore_v1.transactional
         def handle_in_transaction(transaction: firestore_v1.Transaction):
-            event_ref = parent_ref.collection('events').document()
+            transaction.update(job_ref, {'active': False, 'status': Status.DONE})
+            transaction.update(parent_ref, {'status': Status.DONE})
 
-            transaction.set(event_ref, {
+            # Create now document in "events" collection
+            transaction.set(parent_ref.collection('events').document(), {
                 'service_name': service_name,
                 'service_status': service_status,
                 'event_type': 'trigger'
             })
-            transaction.update(job_ref, {'active': False, 'status': Status.DONE})
 
         handle_in_transaction(transaction=firestore_v1.Transaction(client=self.db))

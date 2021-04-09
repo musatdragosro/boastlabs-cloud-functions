@@ -131,8 +131,8 @@ class State(object):
 
     def notify_work_done(self):
         event_creator = EventWorkDone(db=self.db)
-        event_creator.create(
-            job_ref=self.job_doc,
-            parent_ref=self.etl_job_doc,
-            service_name=self.service_name,
-            service_status=Status.DONE)
+        # event_creator.create(
+        #     job_ref=self.job_doc,
+        #     parent_ref=self.etl_job_doc,
+        #     service_name=self.service_name,
+        #     service_status=Status.DONE)

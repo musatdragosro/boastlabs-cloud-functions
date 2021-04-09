@@ -1,1 +1,6 @@
 .idea
+.DS_Store
+build
+dist
+boastlabs_cloud_functions.egg-info
+*__pycache__*

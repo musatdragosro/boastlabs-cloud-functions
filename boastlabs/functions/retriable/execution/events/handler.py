@@ -106,8 +106,10 @@ class TriggerEventHandler(TransactionalHandler):
 
         self.event.add_invocation(invocation)
         self.event.increase_invocation_count()
+        self.transaction.update(state_ref, {'invocation_count': firestore_v1.transforms.Increment(1)})
 
         if allow_execution:
             self.event.increase_execution_count()
+            self.transaction.update(state_ref, {'execution_count': firestore_v1.transforms.Increment(1)})
         else:
             raise ExecutionNotAllowedException(status=old_status)
