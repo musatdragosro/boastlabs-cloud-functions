@@ -3,12 +3,12 @@ import threading
 from typing import List
 from datetime import datetime
 
-from google.cloud import firestore_v1
 from firebase_admin import firestore
 
+from boastlabs import __version__
 from boastlabs.functions.retriable.execution.config import Status
 from boastlabs.functions.retriable.execution.progress import Progress
-from boastlabs.functions.retriable.execution.events.handling import EventWorkDone
+from boastlabs.functions.retriable.execution.events.events import JobStatusUpdateEvent
 
 
 class State(object):
@@ -70,21 +70,24 @@ class State(object):
 
     def set_status(self, status: str, error=None):
         if status == Status.DONE:
-            self.notify_work_done()
 
-            # Save the status last if all worked well
+            self.job_doc.update({'active': False, 'status': status})
+            self.etl_job_doc.update({'status': status})
+
+            # Notify dispatch job that work is done
+            self.create_event(status=status)
+
             self.status = Status.DONE
             self.active = False
 
         elif status == Status.FAILED:
-            # Save the status first regardless if all else will fail
             self.status = Status.FAILED
             self.active = False
 
             error_string = repr(error)
             error_stack = traceback.format_exc()
 
-            self.job_doc.update({'active': False, 'error': error_string, 'error_stack': error_stack})
+            self.job_doc.update({'active': False, 'status': status, 'error': error_string, 'error_stack': error_stack})
             self.etl_job_doc.update({'status': status, 'error': error_string, 'error_stack': error_stack})
 
         else:
@@ -129,10 +132,6 @@ class State(object):
                 p = p[item]
             return p
 
-    def notify_work_done(self):
-        event_creator = EventWorkDone(db=self.db)
-        # event_creator.create(
-        #     job_ref=self.job_doc,
-        #     parent_ref=self.etl_job_doc,
-        #     service_name=self.service_name,
-        #     service_status=Status.DONE)
+    def create_event(self, status):
+        self.etl_job_doc.collection('events').add(
+            JobStatusUpdateEvent(service_name=self.service_name, service_status=status).to_dict())

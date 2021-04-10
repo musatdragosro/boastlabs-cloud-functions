@@ -3,7 +3,7 @@ import logging
 from threading import Thread
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from boastlabs.functions.retriable.execution.time import Timer
+from boastlabs.functions.execution.time import Timer
 
 
 class TimedThread(Thread):
@@ -18,14 +18,14 @@ class TimedThread(Thread):
         self.logger = self._init_logger()
 
     def _init_logger(self):
-        _logger = logging.getLogger(self.getName())
-        _logger.setLevel(logging.DEBUG)
+        logger = logging.getLogger(self.getName())
+        logger.setLevel(logging.DEBUG)
 
         stdout = logging.StreamHandler()
-        _logger.addHandler(stdout)
+        logger.addHandler(stdout)
 
         stdout.setFormatter(logging.Formatter('%(asctime)s %(name)s %(message)s'))
-        return _logger
+        return logger
 
     def raise_for_timeout(self):
         if self.timer.is_timeout():

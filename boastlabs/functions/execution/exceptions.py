@@ -1,8 +1,7 @@
 class HandlerNotFoundException(Exception):
 
-    def __init__(self, event_type, known_events):
-        Exception.__init__(self, f'No value specified for field "event_type" or handler unknown'
-                                 f' for value <{event_type}>. Known events: {known_events}')
+    def __init__(self, event_type):
+        Exception.__init__(self, f'No handler found for event type <{event_type}>.')
 
 
 class DocumentNotFoundException(Exception):
@@ -19,9 +18,7 @@ class IncompatibleApiVersionException(Exception):
 
 
 class ExecutionNotAllowedException(Exception):
-
-    def __init__(self, status):
-        super().__init__(f'Execution Not Allowed! Status is already <{status}>.')
+    pass
 
 
 class SleepException(Exception):

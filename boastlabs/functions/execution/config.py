@@ -1,4 +1,4 @@
-class Status:
+class Status(object):
     NEW = 'new'
     RUNNING = 'running'
     FAILED = 'failed'
