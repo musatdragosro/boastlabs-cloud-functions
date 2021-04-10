@@ -26,7 +26,10 @@ class Job(Worker):
         # Set status of current job on dispatcher
         dispatch_ref = self.doc_ref.parent.parent
         dispatch_ref.set({
-            'current_job_status': status,
+            'current_job': {
+                'status': status,
+                'name': self.service_name
+            },
             'jobs': {
                 self.service_name: {
                     'status': status

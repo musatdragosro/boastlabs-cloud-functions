@@ -14,13 +14,14 @@ firebase_admin.initialize_app()
 db = firestore.client()
 
 if __name__ == '__main__':
+    pass
 
-    Function(
-        service_name='github_dispatcher',
-        db=db,
-        event_path='tenants/test/integrations/Github/fiscal_years/31-Dec-21 FYE/etl_jobs/64AIT1AiFZIYkX697kXa/events/WXpL7VbAswhHxtOEhY5b',
-        worker_class=Dispatch
-    ).run(timeout_seconds=360)
+    # Function(
+    #     service_name='github_dispatcher',
+    #     db=db,
+    #     event_path='tenants/test/integrations/Github/fiscal_years/31-Dec-21 FYE/etl_jobs/64AIT1AiFZIYkX697kXa/events/WXpL7VbAswhHxtOEhY5b',
+    #     worker_class=Dispatch
+    # ).run(timeout_seconds=360)
 
     # Function(
     #     service_name='ingest',
@@ -41,5 +42,4 @@ if __name__ == '__main__':
     #     db=db,
     #     event_path='tenants/test/integrations/Github/fiscal_years/31-Dec-21 FYE/etl_jobs/64AIT1AiFZIYkX697kXa/jobs/summary/events/nMt8n8VGucCvNilcypcG',
     #     worker_class=Job
-    # ).run(timeout_seconds=360)
-    #
+    # ).run(timeout_seconds=540)

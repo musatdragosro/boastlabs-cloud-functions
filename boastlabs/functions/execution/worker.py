@@ -78,7 +78,6 @@ class Worker(TimedThread):
         error_stack = traceback.format_exc()
 
         self.doc_ref.update({
-            'status': Status.FAILED,
             'error': error_string,
             'error_stack': error_stack
         })
@@ -143,6 +142,7 @@ class Worker(TimedThread):
             except SleepException:
                 self.set_status(Status.WAITING_SLEEP)
             except Exception as e:
+                self.set_status(Status.FAILED)
                 self.set_error(e)
                 raise e
 

@@ -33,9 +33,6 @@ class Dispatch(Worker):
         next_job_ref.collection('events').add(
             JobStartEvent(service_name=step, service_status=Status.NEW).to_dict()
         )
-        state_ref.update({
-            'current_job': step
-        })
 
     @abstractmethod
     def work(self):
