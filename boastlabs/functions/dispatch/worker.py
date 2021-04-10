@@ -48,7 +48,10 @@ class Dispatch(Worker):
         next_step = self.get_next_step(current_step)
 
         state_ref = self.event.event_ref.parent.parent
-        state_ref.update({'active': True})
+        state_ref.update({
+            'active': True,
+            'steps': self.get_steps()
+        })
 
         if next_step:
             if current_status == Status.DONE:

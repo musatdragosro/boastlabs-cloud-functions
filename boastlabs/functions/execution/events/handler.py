@@ -57,6 +57,12 @@ class EventHandler(object):
         event.is_handled = True
         transaction.update(self.event_ref, event.to_dict())
 
+        # TODO: debug
+        transaction.update(self.parent_ref, {
+            'invocation_count': firestore_v1.transforms.Increment(1),
+            'execution_count': firestore_v1.transforms.Increment(1 if event.allow_execution else 0),
+        })
+
     def _handle(self):
 
         @firestore_v1.transactional

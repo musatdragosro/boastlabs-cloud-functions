@@ -23,12 +23,12 @@ if __name__ == '__main__':
     #     worker_class=Dispatch
     # ).run(timeout_seconds=360)
 
-    # Function(
-    #     service_name='ingest',
-    #     db=db,
-    #     event_path='tenants/test/integrations/Github/fiscal_years/31-Dec-21 FYE/etl_jobs/64AIT1AiFZIYkX697kXa/jobs/ingest/events/5xeaNlZC2QGurOIUvqfX',
-    #     worker_class=Job
-    # ).run(timeout_seconds=360)
+    Function(
+        service_name='ingest',
+        db=db,
+        event_path='tenants/test/integrations/Github/fiscal_years/31-Dec-21 FYE/etl_jobs/64AIT1AiFZIYkX697kXa/jobs/ingest/events/5xeaNlZC2QGurOIUvqfX',
+        worker_class=Job
+    ).run(timeout_seconds=360)
 
     # Function(
     #     service_name='transform',
