@@ -8,17 +8,15 @@ from boastlabs.functions.execution.time import Timer
 
 class TimedThread(Thread):
 
-    def __init__(self, timer: Timer, event_id: str, name: str):
+    def __init__(self, timer: Timer):
         Thread.__init__(self)
 
         self.timer = timer
-        self.event_id = event_id
-
-        self.setName(f"[{event_id}] [{name}]")
+        self.task_name = self.get_task_name()
         self.logger = self._init_logger()
 
     def _init_logger(self):
-        logger = logging.getLogger(self.getName())
+        logger = logging.getLogger(f"[{self.timer.event_id}] [{self.get_task_name()}]")
         logger.setLevel(logging.DEBUG)
 
         stdout = logging.StreamHandler()
@@ -31,6 +29,10 @@ class TimedThread(Thread):
         if self.timer.is_timeout():
             self.logger.debug('# SIGTIMEOUT received, aborting.')
             self.timer.raise_for_timeout()
+
+    @abstractmethod
+    def get_task_name(self) -> str:
+        raise NotImplementedError
 
     @abstractmethod
     def work(self):

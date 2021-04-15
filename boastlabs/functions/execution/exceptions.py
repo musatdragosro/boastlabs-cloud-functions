@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""Exceptions.
+
+Common Exceptions
+"""
+
+
 class HandlerNotFoundException(Exception):
 
     def __init__(self, event_type):

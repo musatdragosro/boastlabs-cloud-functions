@@ -4,18 +4,18 @@ import traceback
 
 from boastlabs.functions.execution.exceptions import RetryException
 from boastlabs.functions.execution.time import Timer
-from boastlabs.functions.execution.config import Status
+from boastlabs.functions.execution.config import ExecutionStatus
 from boastlabs.functions.execution.events.handler import EventHandler
-from boastlabs.functions.execution.worker import Worker
+from boastlabs.functions.execution.worker import AbstractWorker
 
 
-class Function:
-    def __init__(self, service_name, db, event_path, worker_class: Worker.__class__):
+class Function(object):
+    def __init__(self, db, event_path, worker_class: AbstractWorker.__class__):
 
-        self.service_name = service_name
         self.db = db
         self.event_path = event_path
         self.worker_class = worker_class
+        self.worker = None
 
         self.event_ref = db.document(event_path)
         self.parent_ref = self.event_ref.parent.parent
@@ -44,30 +44,30 @@ class Function:
         timer = Timer(event_id=self.event_ref.id)
 
         # Create the worker
-        worker = self.worker_class(timer=timer, event=event, doc_ref=self.parent_ref, service_name=self.service_name)
+        self.worker = self.worker_class(timer=timer, event=event)
 
-        worker.start()
+        self.worker.start()
 
         # Wait TIMEOUT_MILLIS seconds and timeout 30 seconds early
-        worker.join(timeout_seconds - 30)
+        self.worker.join(timeout_seconds - 30)
 
         # Timeout here - from now on we have 30 seconds to finish threads
         timer.timeout()
 
-        if worker.is_alive():
+        if self.worker.is_alive():
             self.logger.debug('# SIGTIMEOUT Sent')
 
         # Wait for thread to finish
-        worker.join()
+        self.worker.join()
 
-        self.logger.debug(f"# Function exited with <{worker.exit_status}>")
+        self.logger.debug(f"# Function exited with <{self.worker.status}>")
 
         end = time.time()
         duration = end - start
         self.logger.debug(f'# Durations in seconds: {int(duration)}, (start={start}, end={end})')
 
         # Raise exceptions here so GCP will retry our function
-        if worker.exit_status in [Status.WAITING_RETRY, Status.WAITING_SLEEP]:
+        if self.worker.status in [ExecutionStatus.WAITING_RETRY, ExecutionStatus.WAITING_SLEEP]:
             raise RetryException
 
     def run(self, timeout_seconds):

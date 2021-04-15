@@ -1,3 +1,5 @@
 # File: requirements.txt
 firebase-admin
 semantic_version
+sphinx
+sphinx_rtd_theme

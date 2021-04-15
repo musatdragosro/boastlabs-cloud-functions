@@ -1,12 +1,25 @@
-from boastlabs.functions.execution.events.events import EventType
+# -*- coding: utf-8 -*-
+"""Events that the dispatch service can handle.
+
+The objects represent events that can be handled by the dispatcher module,
+such as `failed` or `done`.
+Whenever a task is completed it must create a document in the ``events``
+collection using one of the events defined here.
+
+We only treat events of success type (with status `done`) in order to
+trigger the next steps of the workflow.
+"""
+
+from boastlabs import __version__
+from boastlabs.functions.execution.events.events import EventContext
+from boastlabs.functions.execution.config import ExecutionStatus, EventType
 
 
-class DispatchStartEvent(EventType):
+class DispatchStartEvent(EventContext):
 
-    def __init__(self, service_name: str, service_status: str):
-        EventType.__init__(self, dict(
-            event_type=EventType.DISPATCH_START,
-            service_name=service_name,
-            service_status=service_status))
-
-
+    def __init__(self):
+        EventContext.__init__(self,
+                              api_version=__version__,
+                              event_type=EventType.DISPATCH_START,
+                              task_name='dispatch',
+                              task_status=ExecutionStatus.WAITING_EXECUTION)

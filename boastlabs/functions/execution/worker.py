@@ -2,7 +2,7 @@ import threading
 import traceback
 
 from typing import List
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 from datetime import datetime
 
 from firebase_admin import firestore
@@ -12,30 +12,31 @@ from boastlabs.functions.execution.exceptions import RetryException, SleepExcept
 from boastlabs.functions.execution.threading import TimedThread
 from boastlabs.functions.execution.time import Timer
 from boastlabs.functions.execution.events.events import Event
-from boastlabs.functions.execution.config import Status
+from boastlabs.functions.execution.config import ExecutionStatus
 from boastlabs.functions.execution.progress import Progress
 
 
-class Worker(TimedThread):
+class AbstractWorker(TimedThread):
 
-    service_name: str
+    task_name: str
+
     created_at: datetime
     modified_at: datetime
-    status: str
+
+    status: ExecutionStatus
+
     error: str
     error_stack: str
-    exit_status: str
+
     _progress: Progress
 
-    def __init__(self, timer: Timer, event: Event, doc_ref: DocumentReference, service_name: str):
-        TimedThread.__init__(self, timer=timer, event_id=timer.event_id, name=__class__.__name__)
+    def __init__(self, timer: Timer, event: Event):
+        TimedThread.__init__(self, timer=timer)
 
         self.event = event
-        self.doc_ref = doc_ref
-        self.service_name = service_name
+        self.doc_ref = event.parent_ref
 
-        self.data = {}
-        self.read_data()
+        self.data = self.read_data()
 
         self._read_lock = threading.RLock()
         self._write_lock = threading.RLock()
@@ -52,13 +53,15 @@ class Worker(TimedThread):
         self.sleep_duration = 540
 
     def read_data(self):
-        self.data = self.doc_ref.get().to_dict()
+        data = self.doc_ref.get().to_dict()
 
-        self.created_at = self.data.get('created_at', None)
-        self.modified_at = self.data.get('modified_at', None)
-        self.status = self.data.get('status', Status.NEW)
-        self.error = self.data.get('error', None)
-        self.error_stack = self.data.get('error_stack', None)
+        self.created_at = data.get('created_at', None)
+        self.modified_at = data.get('modified_at', None)
+        self.status = data.get('status', ExecutionStatus.WAITING_EXECUTION)
+        self.error = data.get('error', None)
+        self.error_stack = data.get('error_stack', None)
+
+        return data
 
     def set_created_at(self):
         if self.created_at is None:
@@ -67,11 +70,12 @@ class Worker(TimedThread):
     def set_modified_at(self):
         self.doc_ref.update({'modified_at': firestore.SERVER_TIMESTAMP})
 
-    def set_status(self, status: str):
+    def set_status(self, status: ExecutionStatus):
         self.doc_ref.update({
             'status': status,
             'modified_at': firestore.SERVER_TIMESTAMP
         })
+        self.status = status
 
     def set_error(self, error: Exception):
         error_string = repr(error)
@@ -119,8 +123,8 @@ class Worker(TimedThread):
 
         # Test event.status to figure out what the function has to to
         # It can be only SLEEP or RUN
-        if self.status == Status.SLEEP:
-            self.set_status(Status.SLEEP)
+        if self.status == ExecutionStatus.SLEEPING:
+            self.set_status(ExecutionStatus.SLEEPING)
             duration = self.get_sleep_duration()
 
             # Wait duration / can be interrupted by timeout
@@ -129,27 +133,41 @@ class Worker(TimedThread):
             self.logger.debug(f"# SLEEP END")
 
             # Exit with WAITING_RETRY state and resume execution on next call
-            self.set_status(Status.WAITING_RETRY)
+            self.set_status(ExecutionStatus.WAITING_RETRY)
 
-        if self.status == Status.RUNNING:
+        if self.status == ExecutionStatus.RUNNING:
             self.logger.debug(f"# RUNNING")
             try:
-                self.set_status(Status.RUNNING)
+                self.set_status(ExecutionStatus.RUNNING)
                 self.work()
-                self.set_status(Status.DONE)
+                self.set_status(ExecutionStatus.SUCCESS)
             except RetryException:
-                self.set_status(Status.WAITING_RETRY)
+                self.set_status(ExecutionStatus.WAITING_RETRY)
             except SleepException:
-                self.set_status(Status.WAITING_SLEEP)
+                self.set_status(ExecutionStatus.WAITING_SLEEP)
             except Exception as e:
-                self.set_status(Status.FAILED)
+                self.set_status(ExecutionStatus.FAILED)
                 self.set_error(e)
                 raise e
-
-        # TODO: review this
-        self.read_data()
-        self.exit_status = self.status
 
     @abstractmethod
     def work(self):
         raise NotImplementedError
+
+
+class WorkflowWorker(AbstractWorker, ABC):
+    generated_event: DocumentReference
+
+    def __init__(self, timer: Timer, event: Event):
+        AbstractWorker.__init__(self, timer, event)
+        self.generated_event = None
+
+    def set_generated_event(self, generated_event):
+        self.generated_event = generated_event
+
+    def get_generated_event(self):
+        return self.generated_event
+
+
+class Task(AbstractWorker, ABC):
+    pass

@@ -13,8 +13,8 @@ from boastlabs.functions.execution.exceptions import (
     RetryException)
 
 from boastlabs.functions.execution.events.events import Event, EventType
-from boastlabs.functions.jobs.execution import JobExecutionHandler
 from boastlabs.functions.dispatch.execution import DispatchExecutionHandler
+from boastlabs.functions.workflow.execution import TaskExecutionHandler
 
 
 class EventHandler(object):
@@ -24,7 +24,7 @@ class EventHandler(object):
         self.parent_ref = event_ref.parent.parent
         self.logger = self._init_logger()
 
-        self.event_types = [EventType.DISPATCH_START, EventType.JOB_START, EventType.JOB_STATUS_UPDATE]
+        self.event_types = [EventType.DISPATCH_START, EventType.TASK_START, EventType.TASK_STATUS_UPDATE]
 
     def _init_logger(self):
         logger = logging.getLogger(f"[{self.event_ref.id}] [{self.__class__.__name__}]")
@@ -80,13 +80,13 @@ class EventHandler(object):
                 self.set_event_handled(transaction=transaction, event=event)
                 return event
 
-            if event.context.event_type in [EventType.DISPATCH_START, EventType.JOB_STATUS_UPDATE]:
+            if event.context.event_type in [EventType.DISPATCH_START, EventType.TASK_STATUS_UPDATE]:
                 handler = DispatchExecutionHandler(transaction=transaction, event=event)
                 event.allow_execution = handler.set_execution_state()
 
-            if event.context.event_type in [EventType.JOB_START]:
+            if event.context.event_type in [EventType.TASK_START]:
 
-                handler = JobExecutionHandler(transaction=transaction, event=event)
+                handler = TaskExecutionHandler(transaction=transaction, event=event)
                 event.allow_execution = handler.set_execution_state()
 
             self.set_event_handled(transaction=transaction, event=event)

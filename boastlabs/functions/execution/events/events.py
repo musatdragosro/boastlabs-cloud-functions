@@ -3,31 +3,29 @@ from google.cloud import firestore_v1
 from google.cloud.firestore_v1 import DocumentReference
 
 from boastlabs import __version__
+from boastlabs.functions.execution.config import ExecutionStatus, EventType
 
 
-class EventType:
-    JOB_STATUS_UPDATE = 'job_status_update'
-    JOB_START = 'job_start'
-    DISPATCH_START = 'dispatch_start'
+class EventContext(object):
 
     api_version: str
-    event_type: str
-    service_name: str
-    service_status: str
+    event_type: EventType
+    task_name: str
+    task_status: ExecutionStatus
 
-    def __init__(self, data: dict):
-        self.api_version = data.get('api_version', None)
-        self.event_type = data.get('event_type', None)
-        self.service_name = data.get('service_name', None)
-        self.service_status = data.get('service_status', None)
+    def __init__(self, api_version: str, event_type: EventType, task_name: str, task_status: ExecutionStatus):
+        self.api_version = api_version
+        self.event_type = event_type
+        self.task_name = task_name
+        self.task_status = task_status
 
     def to_dict(self):
         return {
             'context': {
-                'api_version': __version__,
+                'api_version': self.api_version,
                 'event_type': self.event_type,
-                'service_name': self.service_name,
-                'service_status': self.service_status,
+                'task_name': self.task_name,
+                'task_status': self.task_status,
                 'created_at': firestore.SERVER_TIMESTAMP
             }
         }
@@ -35,7 +33,7 @@ class EventType:
 
 class Event(object):
 
-    context: EventType
+    context: EventContext
 
     id: str
     is_handled: bool
@@ -52,7 +50,13 @@ class Event(object):
         self.parent_data = parent_data
         self.parent_ref = event_ref.parent.parent
 
-        self.context = EventType(event_data.get('context', {}))
+        event_context = event_data.get('context', {})
+        self.context = EventContext(
+            api_version=event_context.get('api_version', None),
+            event_type=event_context.get('event_type', None),
+            task_name=event_context.get('task_name', None),
+            task_status=event_context.get('task_status', None)
+        )
 
         self.allow_execution = False
         self.error = event_data.get('error', None)
