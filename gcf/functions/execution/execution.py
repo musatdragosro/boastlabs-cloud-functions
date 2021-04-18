@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from google.cloud import firestore_v1
 
-from boastlabs.functions.execution.events.events import Event
+from gcf.functions.execution.events.events import Event
 
 
 class TransactionalExecutionHandler(object):

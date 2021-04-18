@@ -8,12 +8,12 @@ from datetime import datetime
 from firebase_admin import firestore
 from google.cloud.firestore_v1 import DocumentReference
 
-from boastlabs.functions.execution.exceptions import RetryException, SleepException
-from boastlabs.functions.execution.threading import TimedThread
-from boastlabs.functions.execution.time import Timer
-from boastlabs.functions.execution.events.events import Event
-from boastlabs.functions.execution.config import ExecutionStatus
-from boastlabs.functions.execution.progress import Progress
+from gcf.functions.execution.exceptions import RetryException, SleepException
+from gcf.functions.execution.threading import TimedThread
+from gcf.functions.execution.time import Timer
+from gcf.functions.execution.events.events import Event
+from gcf.functions.execution.config import ExecutionStatus
+from gcf.functions.execution.progress import Progress
 
 
 class AbstractWorker(TimedThread):

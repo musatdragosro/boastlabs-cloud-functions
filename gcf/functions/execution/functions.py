@@ -2,11 +2,11 @@ import time
 import logging
 import traceback
 
-from boastlabs.functions.execution.exceptions import RetryException
-from boastlabs.functions.execution.time import Timer
-from boastlabs.functions.execution.config import ExecutionStatus
-from boastlabs.functions.execution.events.handler import EventHandler
-from boastlabs.functions.execution.worker import AbstractWorker
+from gcf.functions.execution.exceptions import RetryException
+from gcf.functions.execution.time import Timer
+from gcf.functions.execution.config import ExecutionStatus
+from gcf.functions.execution.events.handler import EventHandler
+from gcf.functions.execution.worker import AbstractWorker
 
 
 class Function(object):

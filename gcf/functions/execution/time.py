@@ -1,6 +1,6 @@
 import threading
 import logging
-from boastlabs.functions.execution.exceptions import TimeoutException
+from gcf.functions.execution.exceptions import TimeoutException
 
 
 class TimeoutEvent(threading.Event):

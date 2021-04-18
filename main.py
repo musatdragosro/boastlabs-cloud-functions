@@ -1,13 +1,12 @@
-import time
 from typing import List
 
 import firebase_admin
 from firebase_admin import firestore
 
-from boastlabs.functions import Function
-from boastlabs.functions.dispatch.tasks import DispatchTask
-from boastlabs.functions.dispatch.events import DispatchStartEvent
-from boastlabs.functions.workflow.tasks import WorkflowTask
+from gcf.functions import Function
+from gcf.functions import DispatchTask
+from gcf.functions import WorkflowTask
+from gcf.functions.dispatch.events import DispatchStartEvent
 
 firebase_admin.initialize_app()
 db = firestore.client()
@@ -25,7 +24,6 @@ class IngestTask(WorkflowTask):
         return 'ingest'
 
     def work(self):
-        time.sleep(5)
         print(self.get_task_name(), 'done')
 
 
@@ -35,7 +33,6 @@ class TransformTask(WorkflowTask):
         return 'transform'
 
     def work(self):
-        time.sleep(5)
         print(self.get_task_name(), 'done')
 
 
@@ -45,12 +42,11 @@ class SummaryTask(WorkflowTask):
         return 'summary'
 
     def work(self):
-        time.sleep(5)
         print(self.get_task_name(), 'done')
 
 
 if __name__ == '__main__':
-    root_path = 'tenants/test/integrations/Github/fiscal_years/31-Dec-21 FYE/etl_jobs'
+    root_path = 'tenants/dragos/integrations/Github/fiscal_years/31-Dec-21 FYE/etl_jobs'
     _, dispatch_ref = db.collection(root_path).add({})
     _, start_event_ref = dispatch_ref.collection('events').add(DispatchStartEvent().to_dict())
 

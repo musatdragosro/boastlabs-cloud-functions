@@ -1,5 +1,5 @@
-from boastlabs.functions.execution.execution import TransactionalExecutionHandler
-from boastlabs.functions.execution.config import ExecutionStatus
+from gcf.functions.execution.execution import TransactionalExecutionHandler
+from gcf.functions.execution.config import ExecutionStatus
 
 
 class TaskExecutionHandler(TransactionalExecutionHandler):

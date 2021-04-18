@@ -1,8 +1,8 @@
 from abc import ABC
 
-from boastlabs.functions.execution.config import ExecutionStatus
-from boastlabs.functions.execution.worker import WorkflowWorker
-from boastlabs.functions.workflow.events import TaskStatusUpdateEvent
+from gcf.functions.execution.config import ExecutionStatus
+from gcf.functions.execution.worker import WorkflowWorker
+from gcf.functions.workflow.events import TaskStatusUpdateEvent
 
 
 class WorkflowTask(WorkflowWorker, ABC):

@@ -1,5 +1,5 @@
-boastlabs package
-=================
+gcf package
+===========
 
 Subpackages
 -----------
@@ -7,15 +7,15 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   boastlabs.functions
+   gcf.functions
 
 Submodules
 ----------
 
-boastlabs.example module
-------------------------
+gcf.example module
+------------------
 
-.. automodule:: boastlabs.example
+.. automodule:: gcf.example
    :members:
    :undoc-members:
    :show-inheritance:
@@ -23,7 +23,7 @@ boastlabs.example module
 Module contents
 ---------------
 
-.. automodule:: boastlabs
+.. automodule:: gcf
    :members:
    :undoc-members:
    :show-inheritance:

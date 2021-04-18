@@ -2,8 +2,8 @@ from firebase_admin import firestore
 from google.cloud import firestore_v1
 from google.cloud.firestore_v1 import DocumentReference
 
-from boastlabs import __version__
-from boastlabs.functions.execution.config import ExecutionStatus, EventType
+from gcf import __version__
+from gcf.functions.execution.config import ExecutionStatus, EventType
 
 
 class EventContext(object):

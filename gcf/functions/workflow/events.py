@@ -1,6 +1,6 @@
-from boastlabs import __version__
-from boastlabs.functions.execution.events.events import EventContext
-from boastlabs.functions.execution.config import ExecutionStatus, EventType
+from gcf import __version__
+from gcf.functions.execution.events.events import EventContext
+from gcf.functions.execution.config import ExecutionStatus, EventType
 
 
 class TaskStartEvent(EventContext):

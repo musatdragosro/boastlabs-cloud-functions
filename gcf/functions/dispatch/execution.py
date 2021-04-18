@@ -8,8 +8,8 @@ The handler will prevent executions of the function based on the following logic
 The worker assigned for this event will only run if the `state` is `running`.
 """
 
-from boastlabs.functions.execution.execution import TransactionalExecutionHandler
-from boastlabs.functions.execution.config import ExecutionStatus
+from gcf.functions.execution.execution import TransactionalExecutionHandler
+from gcf.functions.execution.config import ExecutionStatus
 
 
 class DispatchExecutionHandler(TransactionalExecutionHandler):

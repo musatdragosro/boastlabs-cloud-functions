@@ -9,7 +9,7 @@ README = (HERE / "README.md").read_text()
 
 # This call to setup() does all the work
 setup(
-    name="boastlabs-cloud-functions",
+    name="gcf-cloud-functions",
     version="1.0.9",
     description="Boastlabs cloud function template",
     long_description=README,

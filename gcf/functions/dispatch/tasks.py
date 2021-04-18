@@ -23,9 +23,9 @@ from abc import abstractmethod, ABC
 
 from google.cloud.firestore_v1 import DocumentReference
 
-from boastlabs.functions.execution.config import ExecutionStatus
-from boastlabs.functions.execution.worker import WorkflowWorker
-from boastlabs.functions.workflow.events import TaskStartEvent
+from gcf.functions.execution.config import ExecutionStatus
+from gcf.functions.execution.worker import WorkflowWorker
+from gcf.functions.workflow.events import TaskStartEvent
 
 
 class DispatchTask(WorkflowWorker, ABC):

@@ -4,17 +4,17 @@ import semantic_version
 from google.cloud import firestore_v1
 from google.cloud.firestore_v1 import DocumentReference
 
-from boastlabs import __version__
-from boastlabs.functions.execution.exceptions import (
+from gcf import __version__
+from gcf.functions.execution.exceptions import (
     DocumentNotFoundException,
     IncompatibleApiVersionException,
     ExecutionNotAllowedException,
     HandlerNotFoundException,
     RetryException)
 
-from boastlabs.functions.execution.events.events import Event, EventType
-from boastlabs.functions.dispatch.execution import DispatchExecutionHandler
-from boastlabs.functions.workflow.execution import TaskExecutionHandler
+from gcf.functions.execution.events.events import Event, EventType
+from gcf.functions.dispatch.execution import DispatchExecutionHandler
+from gcf.functions.workflow.execution import TaskExecutionHandler
 
 
 class EventHandler(object):
