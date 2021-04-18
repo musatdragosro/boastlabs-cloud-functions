@@ -101,6 +101,8 @@ class EventHandler(object):
             if not event.allow_execution:
                 raise ExecutionNotAllowedException()
             return event
+        except DocumentNotFoundException:
+            raise
         except ExecutionNotAllowedException:
             raise
         except Exception as e:

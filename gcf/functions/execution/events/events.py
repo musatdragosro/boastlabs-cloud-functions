@@ -45,6 +45,7 @@ class Event(object):
     def __init__(self, event_data: dict, parent_data: dict, event_ref: DocumentReference):
         self.event_data = event_data
         self.event_ref = event_ref
+        self.id = event_ref.id
 
         # TODO
         self.parent_data = parent_data
