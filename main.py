@@ -24,6 +24,11 @@ class IngestTask(WorkflowTask):
         return 'ingest'
 
     def work(self):
+        progress1 = self.get_progress(['logs', 'users', 'user1', 'data retrieved'])
+        progress2 = self.get_progress(['logs', 'users', 'user2', 'data retrieved'])
+        progress1.update(ready=True)
+        progress2.update(ready=True)
+        self.save_progress()
         print(self.get_task_name(), 'done')
 
 

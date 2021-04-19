@@ -8,6 +8,7 @@ Subpackages
    :maxdepth: 4
 
    gcf.functions.dispatch
+   gcf.functions.example
    gcf.functions.execution
    gcf.functions.workflow
 

@@ -1,1 +1,1 @@
-Boastlabs cloud functions
+Google cloud functions helpers.

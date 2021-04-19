@@ -9,17 +9,6 @@ Subpackages
 
    gcf.functions
 
-Submodules
-----------
-
-gcf.example module
-------------------
-
-.. automodule:: gcf.example
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 Module contents
 ---------------
 

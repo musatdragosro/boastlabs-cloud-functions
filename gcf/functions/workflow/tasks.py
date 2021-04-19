@@ -28,10 +28,8 @@ class WorkflowTask(WorkflowWorker, ABC):
 
         # Notify dispatcher that the work is done
         if status == ExecutionStatus.SUCCESS:
-            _, generated_event_ref = dispatch_ref.collection('events').add(
+            _, self.generated_event = dispatch_ref.collection('events').add(
                 TaskStatusUpdateEvent(
                     task_name=self.get_task_name(),
                     task_status=status
                 ).to_dict())
-
-            self.set_generated_event(generated_event_ref)

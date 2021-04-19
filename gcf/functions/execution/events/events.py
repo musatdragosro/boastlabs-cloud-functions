@@ -8,10 +8,10 @@ from gcf.functions.execution.config import ExecutionStatus, EventType
 
 class EventContext(object):
 
-    api_version: str
-    event_type: EventType
-    task_name: str
-    task_status: ExecutionStatus
+    # api_version: str
+    # event_type: EventType
+    # task_name: str
+    # task_status: ExecutionStatus
 
     def __init__(self, api_version: str, event_type: EventType, task_name: str, task_status: ExecutionStatus):
         self.api_version = api_version
@@ -33,14 +33,14 @@ class EventContext(object):
 
 class Event(object):
 
-    context: EventContext
-
-    id: str
-    is_handled: bool
-    error: str
-    error: None
-    invocations: []
-    allow_execution: bool
+    # context: EventContext
+    #
+    # id: str
+    # is_handled: bool
+    # error: str
+    # error: None
+    # invocations: []
+    # allow_execution: bool
 
     def __init__(self, event_data: dict, parent_data: dict, event_ref: DocumentReference):
         self.event_data = event_data
@@ -78,5 +78,3 @@ class Event(object):
 
     def add_invocation(self, invocation):
         self.invocations += [invocation]
-
-

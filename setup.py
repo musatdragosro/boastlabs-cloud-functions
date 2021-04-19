@@ -10,8 +10,8 @@ README = (HERE / "README.md").read_text()
 # This call to setup() does all the work
 setup(
     name="gcf-cloud-functions",
-    version="1.0.10",
-    description="Boastlabs cloud function template",
+    version="1.0.11",
+    description="Google cloud function helpers.",
     long_description=README,
     long_description_content_type="text/markdown",
     url="https://github.com/musatdragosro/boastlabs-cloud-functions",

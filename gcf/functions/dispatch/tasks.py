@@ -44,7 +44,6 @@ class DispatchTask(WorkflowWorker, ABC):
 
         raise NotImplementedError
 
-    # def get_
     def on_task_update(self, task_name: str, task_status: ExecutionStatus):
         """
         Hook for signaling a task update.
@@ -75,9 +74,7 @@ class DispatchTask(WorkflowWorker, ABC):
         next_task_ref = state_ref.collection('tasks').document(next_task)
         next_task_ref.set({})
 
-        _, generated_event_ref = next_task_ref.collection('events').add(TaskStartEvent(task_name=next_task).to_dict())
-
-        self.set_generated_event(generated_event_ref)
+        _, self.generated_event = next_task_ref.collection('events').add(TaskStartEvent(task_name=next_task).to_dict())
 
     def work(self):
         current_task = self.event.context.task_name

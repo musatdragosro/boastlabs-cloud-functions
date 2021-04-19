@@ -16,7 +16,7 @@ from gcf.functions.execution.config import ExecutionStatus
 from gcf.functions.execution.progress import Progress
 
 
-class AbstractWorker(TimedThread):
+class AbstractWorker(TimedThread, ABC):
 
     task_name: str
 
@@ -86,16 +86,39 @@ class AbstractWorker(TimedThread):
             'error_stack': error_stack
         })
 
-    def reset(self):
-        self.doc_ref.update({
-            'error': None,
-            'error_stack': None
-        })
-
     def get_sleep_duration(self):
         return self.sleep_duration
 
     def save_progress(self):
+        """ Utility function to save progress state.
+
+        Examples:
+
+            Save partial progress.
+
+            >>> progress = self.get_progress(['users', 'repos', 'commits'])
+            ... # processing partial commits
+            ... progress.update(ready=False, page='1', count=100)
+            ... self.save_progress()
+
+            Save all work done.
+
+            >>> progress = self.get_progress(['users', 'repos', 'commits'])
+            ... # processing done
+            ... progress.update(ready=True)
+            ... self.save_progress()
+
+            Log a certain operation as done.
+
+            >>> progress1 = self.get_progress(['logs', 'users', 'user1', 'data retrieved'])
+            ... # simulating 'logs/users/user1/data retrieved' path
+            ... progress2 = self.get_progress(['logs', 'users', 'user2', 'data retrieved'])
+            ... # simulating 'logs/users/user2/data retrieved' path
+            ... progress1.update(ready=True)
+            ... progress2.update(ready=True)
+            ... self.save_progress()
+        """
+
         with self._write_lock:
             self.set_modified_at()
             self.doc_ref.collection('progress').document('progress').set({
@@ -103,13 +126,30 @@ class AbstractWorker(TimedThread):
             }, merge=True)
 
     def get_progress(self, items: List[str]) -> Progress:
-        """
-        todo: add documentation, mandatory function
-        :param items:
-        :return:
-        """
+        """ Utility function to read progress state.
 
-        # This will basically do a return progress[user_name][organisation][repo][kind]
+        If the progress does not exists it will be initialized with defaults,
+        otherwise it will return the current progress.
+
+        Args:
+            items: A list of any meaningfull items, stored in a tree like structure.
+
+        Returns:
+            The Progress object
+
+        Examples:
+            Example for continuing to read data from a paginated 3rd party provider.
+
+            >>> progress = self.get_progress(['users', 'repos', 'commits'])
+            ... # simulating 'users/repos/commits' path
+            ... if progress.is_ready():
+            ...     # Work is done
+            ...     return
+            ... else:
+            ...     page = progress.get_page()
+            ...     # Continue reads from page
+            ...     provider.read_data(page=page)
+        """
 
         with self._read_lock:
             p = self._progress
@@ -152,22 +192,37 @@ class AbstractWorker(TimedThread):
 
     @abstractmethod
     def work(self):
+        """Class must implementation method for actual work.
+
+        Important:
+            The function must check for timeout ``self.raise_for_timeout()`` for a clean exit.
+            Otherwise the state will remain inconsistent and subsequent executions will be aborted.
+
+            Check if timeout had occurred in places that might happen, e.g. `in for loops` or
+            before and after costly operations.
+
+        Exceptions:
+            In case you need the function to be retried by GCP,
+            raise an `gcf.functions.execution.exceptions.RetryException` exception.
+
+            In case you need the function to wait
+            raise a `gcf.functions.execution.exceptions.SleepException` exception.
+            Execution will be aborted and on next GCP retry the function will sleep for
+            maximum allowed (9 minutes) and, on the 3rd call, it will try to run normally,
+            possibly exiting with wait again.
+        """
+
         raise NotImplementedError
 
 
 class WorkflowWorker(AbstractWorker, ABC):
     generated_event: DocumentReference
 
-    def __init__(self, timer: Timer, event: Event):
-        AbstractWorker.__init__(self, timer, event)
-        self.generated_event = None
-
-    def set_generated_event(self, generated_event):
-        self.generated_event = generated_event
-
     def get_generated_event(self):
-        return self.generated_event
+        if hasattr(self, 'generated_event'):
+            return self.generated_event
+        return None
 
 
-class Task(AbstractWorker, ABC):
+class Worker(AbstractWorker, ABC):
     pass

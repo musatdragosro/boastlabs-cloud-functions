@@ -11,7 +11,6 @@ from gcf.functions.execution.exceptions import (
     ExecutionNotAllowedException,
     HandlerNotFoundException,
     RetryException)
-
 from gcf.functions.execution.events.events import Event, EventType
 from gcf.functions.dispatch.execution import DispatchExecutionHandler
 from gcf.functions.workflow.execution import TaskExecutionHandler
