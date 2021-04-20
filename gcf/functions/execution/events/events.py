@@ -8,11 +8,6 @@ from gcf.functions.execution.config import ExecutionStatus, EventType
 
 class EventContext(object):
 
-    # api_version: str
-    # event_type: EventType
-    # task_name: str
-    # task_status: ExecutionStatus
-
     def __init__(self, api_version: str, event_type: EventType, task_name: str, task_status: ExecutionStatus):
         self.api_version = api_version
         self.event_type = event_type
@@ -33,19 +28,12 @@ class EventContext(object):
 
 class Event(object):
 
-    # context: EventContext
-    #
-    # id: str
-    # is_handled: bool
-    # error: str
-    # error: None
-    # invocations: []
-    # allow_execution: bool
-
-    def __init__(self, event_data: dict, parent_data: dict, event_ref: DocumentReference):
-        self.event_data = event_data
+    def __init__(self, event_data: dict, parent_data: dict, event_ref: DocumentReference, firestore_data: dict):
         self.event_ref = event_ref
         self.id = event_ref.id
+
+        self.event_data = event_data
+        self._firestore_data = firestore_data
 
         # TODO
         self.parent_data = parent_data
@@ -71,6 +59,7 @@ class Event(object):
                 'api_version': __version__,
                 'error': self.error,
             },
+            'firestore_data': self._firestore_data,
             'invocation_count': firestore_v1.transforms.Increment(1),
             'execution_count': firestore_v1.transforms.Increment(1 if self.allow_execution else 0),
             'invocations': self.invocations,
@@ -78,3 +67,8 @@ class Event(object):
 
     def add_invocation(self, invocation):
         self.invocations += [invocation]
+
+    @property
+    def firestore_data(self):
+        """The event data sent by firestore database"""
+        return self._firestore_data

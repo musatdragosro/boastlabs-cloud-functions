@@ -17,9 +17,10 @@ from gcf.functions.workflow.execution import TaskExecutionHandler
 
 
 class EventHandler(object):
-    def __init__(self, db, event_ref: DocumentReference):
-        self.db = db
+    def __init__(self, event_ref: DocumentReference, firestore_data: dict):
+        self.db = event_ref._client
         self.event_ref = event_ref
+        self.firestore_data = firestore_data
         self.parent_ref = event_ref.parent.parent
         self.logger = self._init_logger()
 
@@ -36,7 +37,11 @@ class EventHandler(object):
         return logger
 
     def create_event(self, event_data: dict, parent_data: dict) -> Event:
-        event = Event(event_data=event_data, parent_data=parent_data, event_ref=self.event_ref)
+        event = Event(
+            event_data=event_data,
+            parent_data=parent_data,
+            event_ref=self.event_ref,
+            firestore_data=self.firestore_data)
         try:
             if event.context.event_type not in self.event_types:
                 raise HandlerNotFoundException(event_type=event.context.event_type)
@@ -94,7 +99,7 @@ class EventHandler(object):
 
         return handle_in_transaction(transaction=firestore_v1.Transaction(client=self.db))
 
-    def handle(self):
+    def handle(self) -> Event:
         try:
             event = self._handle()
             if not event.allow_execution:

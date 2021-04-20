@@ -10,15 +10,16 @@ from gcf.functions.execution.worker import AbstractWorker
 
 
 class Function(object):
-    def __init__(self, db, event_path, worker_class: AbstractWorker.__class__):
+    def __init__(self, db, event_path, worker_class: AbstractWorker.__class__, firestore_data: dict = None):
 
         self.db = db
         self.event_path = event_path
         self.worker_class = worker_class
         self.worker = None
 
+        self.firestore_data = firestore_data
+
         self.event_ref = db.document(event_path)
-        self.parent_ref = self.event_ref.parent.parent
 
         self.logger = self._init_logger()
 
@@ -37,7 +38,7 @@ class Function(object):
 
         # Handle Event
         # Can raise ExecutionNotAllowedException or RetryException
-        event_handler = EventHandler(db=self.db, event_ref=self.event_ref)
+        event_handler = EventHandler(event_ref=self.event_ref, firestore_data=self.firestore_data)
         event = event_handler.handle()
 
         # Init the timer
@@ -83,4 +84,3 @@ class Function(object):
             traceback.print_exc()
         finally:
             self.logger.debug("# END")
-

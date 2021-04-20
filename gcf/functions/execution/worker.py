@@ -35,6 +35,7 @@ class AbstractWorker(TimedThread, ABC):
 
         self.event = event
         self.doc_ref = event.parent_ref
+        self.db = event.event_ref._client
 
         self.data = self.read_data()
 
@@ -225,4 +226,6 @@ class WorkflowWorker(AbstractWorker, ABC):
 
 
 class Worker(AbstractWorker, ABC):
-    pass
+
+    def get_task_name(self) -> str:
+        return 'worker'
