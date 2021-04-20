@@ -225,7 +225,7 @@ class WorkflowWorker(AbstractWorker, ABC):
         return None
 
 
-class Worker(AbstractWorker, ABC):
+class Task(AbstractWorker, ABC):
 
     def get_task_name(self) -> str:
         return 'worker'

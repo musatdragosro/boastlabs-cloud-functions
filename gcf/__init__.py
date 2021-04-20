@@ -28,7 +28,7 @@ Example GCP dispatch function:
         ...     def get_workflow(self) -> List[str]:
         ...        return ['task1', 'task2']
         ...
-        ... def trigger(request, context):
+        ... def trigger(data, context):
         ...    print(f"Function triggered by change to: {context.resource}.")
         ...
         ...    Function(
@@ -65,9 +65,7 @@ Note:
         * task2: ..dispatch_tasks/{dispatchTaskId}/tasks/``task2``/events/{eventId}
 
 Example GCP workflow function:
-        >>> from typing import List
-        ... 
-        ... import firebase_admin
+        >>> import firebase_admin
         ... from firebase_admin import firestore
         ...
         ... from gcf.functions import WorkflowTask
@@ -84,7 +82,7 @@ Example GCP workflow function:
         ...    def work(self):
         ...        print(self.get_task_name(), 'done')
         ...
-        ... def trigger(request, context):
+        ... def trigger(data, context):
         ...    print(f"Function triggered by change to: {context.resource}.")
         ...
         ...    Function(
@@ -103,10 +101,45 @@ Deploy GCP workflow function:
         ...    --timeout 540
         ...    --entry-point trigger
         ...    --trigger-event providers/cloud.firestore/eventTypes/document.create
-        ...    --trigger-resource "projects/<YOUR_PROJECT_ID>/databases/(default)/documents/<ROOT_COLLECTION>/<ROOT_DOCUMENT>/dispatch_tasks/{dispatchTaskId}/tasks/task1//events/{eventId}"
+        ...    --trigger-resource "projects/<YOUR_PROJECT_ID>/databases/(default)/documents/<ROOT_COLLECTION>/<ROOT_DOCUMENT>/dispatch_tasks/{dispatchTaskId}/tasks/task1/events/{eventId}"
 
 Note:
     Here the task name as part of firestore document path must be ``task1``.
+
+
+Example GCP Simple function:
+        >>> import firebase_admin
+        ... from firebase_admin import firestore
+        ...
+        ... from gcf.functions import Task
+        ... from gcf.functions import Function
+        ...
+        ... firebase_admin.initialize_app()
+        ... db = firestore.client()
+        ...
+        ... class MyTask(Task):
+        ...
+        ...    def work(self):
+        ...        print(self.get_task_name(), 'done')
+        ...
+        ... def trigger(data, context):
+        ...    print(f"Function triggered by change to: {context.resource}.")
+        ...
+        ...    Function(
+        ...        db=db,
+        ...        event_path=context.resource.split('/documents/')[1],
+        ...        worker_class=MyTask,
+        ...        firestore_data=data
+        ...    ).run(timeout_seconds=540)
+
+Deploy GCP Simple function:
+        >>> gcloud functions deploy test_dispatch
+        ...    --runtime python37
+        ...    --retry
+        ...    --timeout 540
+        ...    --entry-point trigger
+        ...    --trigger-event providers/cloud.firestore/eventTypes/document.create
+        ...    --trigger-resource "projects/<YOUR_PROJECT_ID>/databases/(default)/documents/<ROOT_COLLECTION>/<ROOT_DOCUMENT>/tasks/{taskId}/events/{eventId}"
 
 """
 
