@@ -224,8 +224,8 @@ class WorkflowWorker(AbstractWorker, ABC):
             return self.generated_event
         return None
 
-
-class Task(AbstractWorker, ABC):
-
-    def get_task_name(self) -> str:
-        return 'worker'
+# 
+# class Task(AbstractWorker, ABC):
+# 
+#     def get_task_name(self) -> str:
+#         return 'worker'

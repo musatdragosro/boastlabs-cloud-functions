@@ -28,12 +28,11 @@ class EventContext(object):
 
 class Event(object):
 
-    def __init__(self, event_data: dict, parent_data: dict, event_ref: DocumentReference, firestore_data: dict):
+    def __init__(self, event_data: dict, parent_data: dict, event_ref: DocumentReference):
         self.event_ref = event_ref
         self.id = event_ref.id
 
         self.event_data = event_data
-        self._firestore_data = firestore_data
 
         # TODO
         self.parent_data = parent_data
@@ -59,7 +58,6 @@ class Event(object):
                 'api_version': __version__,
                 'error': self.error,
             },
-            'firestore_data': self._firestore_data,
             'invocation_count': firestore_v1.transforms.Increment(1),
             'execution_count': firestore_v1.transforms.Increment(1 if self.allow_execution else 0),
             'invocations': self.invocations,
@@ -67,8 +65,3 @@ class Event(object):
 
     def add_invocation(self, invocation):
         self.invocations += [invocation]
-
-    @property
-    def firestore_data(self):
-        """The event data sent by firestore database"""
-        return self._firestore_data
